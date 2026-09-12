@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="goryacheva_ac2504/goryacheva_ac2504.vcxproj" />
+</Solution>
