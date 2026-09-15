@@ -36,6 +36,11 @@ int inputint(string text)
             cin.ignore(1000, '\n');
             cout << "not number.\n";
         }
+        else if (value <= 0)
+        {
+            cin.ignore(1000, '\n');
+            cout << "Value must be positive.\n";
+        }
         else
         {
             cin.ignore(1000, '\n');
@@ -59,6 +64,11 @@ double inputdouble(string text)
             cin.ignore(1000, '\n');
             cout << "not number. \n";
         }
+        else if (value <= 0)
+        {
+            cin.ignore(1000, '\n');
+            cout << "Value must be positive.\n";
+        }
         else
         {
             cin.ignore(1000, '\n');
@@ -67,7 +77,7 @@ double inputdouble(string text)
     }
 }
 
-string inputstrind(string text)
+string inputstring(string text)
 {
     string value;
     while (true);
@@ -96,6 +106,21 @@ bool inputyesno(string text)
         if (value == "n")  return false;
         cout << "Please type y or n.\n";
     }
+}
+
+void addpipe()
+{
+    cout << "\nEnter pipe data:\n";
+    pipe1.name_p = inputstring("Name: ");
+
+    pipe1.lenght = inputdouble("Lenght in km: ");
+
+    pipe1.diam = inputint("Diametr in mm: ");
+
+    pipe1.repair = inputyesno("Is it under repair?");
+
+    exist_pipe = true;
+    cout << "Pipe added.\n";
 }
 
 void menu()
