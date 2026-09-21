@@ -18,10 +18,20 @@ struct CS
     string class_cs;
 };
 
-bool exist_pipe = false;
-bool exist_cs = false;
-Pipe pipe1;
-CS CS1;
+int main()
+{
+    Pipe pipe1;
+    bool exist_pipe = false;
+    CS CS1;
+    bool exist_cs = false;
+
+    addpipe(pipe1, exist_pipe);
+    showpipe(pipe1, exist_pipe);
+    editpipe(pipe1, exist_pipe);
+
+    return 0;
+}
+
 
 int inputint(string text)
 {
@@ -80,7 +90,7 @@ double inputdouble(string text)
 string inputstring(string text)
 {
     string value;
-    while (true);
+    while (true)
     {
         cout << text;
         getline(cin, value);
@@ -108,7 +118,7 @@ bool inputyesno(string text)
     }
 }
 
-void addpipe()
+void addpipe(Pipe& pipe1, bool& exist_pipe)
 {
     cout << "\nEnter pipe data:\n";
     pipe1.name_p = inputstring("Name: ");
@@ -121,6 +131,49 @@ void addpipe()
 
     exist_pipe = true;
     cout << "Pipe added.\n";
+}
+
+void showpipe(Pipe& pipe1, bool& exist_pipe)
+{
+    if (!exist_pipe)
+    {
+        cout << "No pipe yet.\n";
+            return;
+    }
+    cout << "Pipe: " << pipe1.name_p << "\n";
+    cout << "Lenght: " << pipe1.lenght << "\n";
+    cout << "Diametr: " << pipe1.diam << "\n";
+    cout << "In ripair: " << (pipe1.repair ? "yes" : "no") << "\n";
+}
+void editpipe(Pipe& pipe1, bool& exist_pipe)
+{
+    if (!exist_pipe)
+    {
+        cout << "No pipe yet. Add it first. \n";
+        return;
+    }
+    cout << "Now in repair: " << (pipe1.repair ? "yes" : "no") << "\n";
+    pipe1.repair = inputyesno("Set to repair");
+    cout << "Done \n";
+
+}
+void addcs(CS& CS1, bool& exist_cs)
+{
+    cout << "Enter cs data: \n";
+    CS1.name_cs = inputstring("Name: ");
+
+    CS1.amount_ws = inputint("Total number of shops: ");
+
+    CS1.amount_ws_in_prog = inputint("Shops working now: ");
+    while (CS1.amount_ws_in_prog > CS1.amount_ws)
+    {
+        cout << "CS1.amount_ws" << CS1.amount_ws << ".\n";
+        CS1.amount_ws_in_prog = inputint("Shops working now: ");
+    }
+    CS1.class_cs = inputstring("Station class: ");
+
+    exist_cs = true;
+    cout << "CS added.\n";
 }
 
 void menu()
@@ -137,6 +190,14 @@ void menu()
 
 int main()
 {
+    Pipe pipe1;
+    bool exist_pipe = false;
+    CS CS1;
+    bool exist_cs = false;
 
+    addpipe(pipe1, exist_pipe);
+    showpipe(pipe1, exist_pipe);
+    editpipe(pipe1, exist_pipe);
+
+    return 0;
 }
-
