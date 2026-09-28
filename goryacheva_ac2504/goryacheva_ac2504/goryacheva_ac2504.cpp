@@ -18,20 +18,6 @@ struct CS
     string class_cs;
 };
 
-int main()
-{
-    Pipe pipe1;
-    bool exist_pipe = false;
-    CS CS1;
-    bool exist_cs = false;
-
-    addpipe(pipe1, exist_pipe);
-    showpipe(pipe1, exist_pipe);
-    editpipe(pipe1, exist_pipe);
-
-    return 0;
-}
-
 
 int inputint(string text)
 {
@@ -46,14 +32,12 @@ int inputint(string text)
             cin.ignore(1000, '\n');
             cout << "not number.\n";
         }
-        else if (value <= 0)
+        else if (value < 0)
         {
-            cin.ignore(1000, '\n');
             cout << "Value must be positive.\n";
         }
         else
         {
-            cin.ignore(1000, '\n');
             return value;
 
         }
@@ -76,12 +60,10 @@ double inputdouble(string text)
         }
         else if (value <= 0)
         {
-            cin.ignore(1000, '\n');
             cout << "Value must be positive.\n";
         }
         else
         {
-            cin.ignore(1000, '\n');
             return value;
         }
     }
@@ -93,7 +75,7 @@ string inputstring(string text)
     while (true)
     {
         cout << text;
-        getline(cin, value);
+        getline(cin >> ws, value);
         if (value == "")
         {
             cout << "Cannot be empty. \n";
@@ -111,7 +93,7 @@ bool inputyesno(string text)
     while (true)
     {
         cout << text << " y/n ";
-        getline(cin, value);
+        getline(cin >> ws, value);
         if (value == "y") return true;
         if (value == "n")  return false;
         cout << "Please type y or n.\n";
@@ -176,6 +158,69 @@ void addcs(CS& CS1, bool& exist_cs)
     cout << "CS added.\n";
 }
 
+void showcs(CS& CS1, bool& exist_cs)
+{
+    if (!exist_cs)
+    {
+        cout << "No CS yet";
+        return;
+    }
+    cout << "CS:" << CS1.name_cs << "\n";
+    cout << "Shops total:" << CS1.amount_ws << "\n";
+    cout << "Shops working:" << CS1.amount_ws_in_prog << "\n";
+    cout << "Class:" << CS1.class_cs << "\n";
+}
+
+void startshop(CS& CS1)
+{
+    if (CS1.amount_ws_in_prog == CS1.amount_ws)
+    {
+        cout << "All shops already working.\n";
+    }
+    else
+    {
+        CS1.amount_ws_in_prog++;
+        cout << "Shop started. Working: " << CS1.amount_ws_in_prog << "/" << CS1.amount_ws << "\n";
+    }
+}
+
+void stopshop(CS& CS1)
+{
+    if (CS1.amount_ws_in_prog <= 0)
+    {
+        cout << "No shops are working.\n";
+    }
+    else
+    {
+        CS1.amount_ws_in_prog--;
+        cout << "Shop stopped. Working: " << CS1.amount_ws_in_prog << "/" << CS1.amount_ws << "\n";
+    }
+}
+void editcs(CS& CS1, bool& exist_cs)
+{
+    if (!exist_cs)
+    {
+        cout << "No CS yet. Add it first.\n";
+        return;
+    }
+    cout << "1. Start a shop\n";
+    cout << "2. Stop a shop\n";
+    int choice = inputint("Choice: ");
+
+    if (choice == 1)
+    {
+        startshop(CS1);
+    }
+    else if (choice == 2)
+    {
+        stopshop(CS1);
+    }
+    else
+    {
+        cout << "Wrong choice.\n";
+    }
+}
+
 void menu()
 {
     cout << "1. add pipe\n";
@@ -188,16 +233,28 @@ void menu()
     cout << "0. exit\n";
 }
 
+
 int main()
 {
     Pipe pipe1;
     bool exist_pipe = false;
     CS CS1;
     bool exist_cs = false;
+    int option;
+    while (true)
+    {
+        menu();
+        option = inputint("\nSelect one of the menu items: ");
 
-    addpipe(pipe1, exist_pipe);
-    showpipe(pipe1, exist_pipe);
-    editpipe(pipe1, exist_pipe);
-
+        if (option == 1) addpipe(pipe1,exist_pipe);
+        else if (option == 2) addcs(CS1, exist_cs);
+        else if (option == 3) { showcs(CS1, exist_cs); showpipe(pipe1, exist_pipe); }
+        else if (option == 4) editpipe(pipe1, exist_pipe);
+        else if (option == 5) editcs(CS1, exist_cs);
+ //       else if (option == 6) save(pipe1, exist_pipe, CS1, exist_cs);
+ //       else if (option == 7) load(pipe1, exist_pipe, CS1, exist_cs);
+        else if (option == 0) break;
+        else cout << "Wrong menu item.\n";
+    }
     return 0;
 }
