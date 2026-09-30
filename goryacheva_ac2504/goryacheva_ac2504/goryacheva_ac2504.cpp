@@ -334,8 +334,8 @@ int main()
         menu();
         option = inputint("\nSelect one of the menu items: ");
 
-        if (option == 1) addpipe(pipe1);
-        else if (option == 2) addcs(CS1);
+        if (option == 1) exist_pipe = addpipe(pipe1);
+        else if (option == 2) exist_cs = addcs(CS1);
         else if (option == 3) { showcs(CS1, exist_cs); showpipe(pipe1, exist_pipe); }
         else if (option == 4) editpipe(pipe1, exist_pipe);
         else if (option == 5) editcs(CS1, exist_cs);
