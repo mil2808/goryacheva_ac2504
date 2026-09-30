@@ -1,5 +1,7 @@
 ﻿#include <iostream>
 #include <string>
+#include <fstream>
+
 using namespace std; 
 
 struct Pipe 
@@ -39,7 +41,6 @@ int inputint(string text)
         else
         {
             return value;
-
         }
 
     } 
@@ -100,7 +101,7 @@ bool inputyesno(string text)
     }
 }
 
-void addpipe(Pipe& pipe1, bool& exist_pipe)
+bool addpipe(Pipe& pipe1)
 {
     cout << "\nEnter pipe data:\n";
     pipe1.name_p = inputstring("Name: ");
@@ -111,8 +112,8 @@ void addpipe(Pipe& pipe1, bool& exist_pipe)
 
     pipe1.repair = inputyesno("Is it under repair?");
 
-    exist_pipe = true;
     cout << "Pipe added.\n";
+    return true;
 }
 
 void showpipe(Pipe& pipe1, bool& exist_pipe)
@@ -139,7 +140,7 @@ void editpipe(Pipe& pipe1, bool& exist_pipe)
     cout << "Done \n";
 
 }
-void addcs(CS& CS1, bool& exist_cs)
+bool addcs(CS& CS1)
 {
     cout << "Enter cs data: \n";
     CS1.name_cs = inputstring("Name: ");
@@ -149,20 +150,20 @@ void addcs(CS& CS1, bool& exist_cs)
     CS1.amount_ws_in_prog = inputint("Shops working now: ");
     while (CS1.amount_ws_in_prog > CS1.amount_ws)
     {
-        cout << "CS1.amount_ws" << CS1.amount_ws << ".\n";
+        cout << "Cannot be more than" << CS1.amount_ws << ".\n";
         CS1.amount_ws_in_prog = inputint("Shops working now: ");
     }
     CS1.class_cs = inputstring("Station class: ");
 
-    exist_cs = true;
     cout << "CS added.\n";
+    return true;
 }
 
 void showcs(CS& CS1, bool& exist_cs)
 {
     if (!exist_cs)
     {
-        cout << "No CS yet";
+        cout << "No CS yet.\n";
         return;
     }
     cout << "CS:" << CS1.name_cs << "\n";
@@ -221,6 +222,92 @@ void editcs(CS& CS1, bool& exist_cs)
     }
 }
 
+void savepipe(Pipe& pipe1, bool exist_pipe)
+{
+    if (!exist_pipe)
+    {
+        cout << "No pipe to save.\n";
+        return;
+    }
+
+    ofstream file("pipe.txt");
+    if (!file)
+    {
+        cout << "Cannot open file for writing.\n";
+        return;
+    }
+
+    file << pipe1.name_p << "\n";
+    file << pipe1.lenght << "\n";
+    file << pipe1.diam << "\n";
+    file << pipe1.repair << "\n";
+
+    file.close();
+    cout << "Pipe saved to pipe.txt\n";
+}
+
+void savecs(CS& CS1, bool exist_cs)
+{
+    if (!exist_cs)
+    {
+        cout << "No CS to save.\n";
+        return;
+    }
+
+    ofstream file("cs.txt");
+    if (!file)
+    {
+        cout << "Cannot open file for writing.\n";
+        return;
+    }
+
+    file << CS1.name_cs << "\n";
+    file << CS1.amount_ws << "\n";
+    file << CS1.amount_ws_in_prog << "\n";
+    file << CS1.class_cs << "\n";
+
+    file.close();
+    cout << "CS saved to cs.txt\n";
+
+    file.close();
+    cout << "Saved to goryacheva_ac2504.txt\n";
+}
+
+void loadpipe(Pipe& pipe1, bool& exist_pipe)
+{
+    ifstream file("pipe.txt");
+    if (!file)
+    {
+        cout << "File pipe.txt not found.\n";
+        return;
+    }
+
+    getline(file, pipe1.name_p);
+    file >> pipe1.lenght >> pipe1.diam >> pipe1.repair;
+
+    file.close();
+    exist_pipe = true;
+    cout << "Pipe loaded from pipe.txt\n";
+}
+
+void loadcs(CS& CS1, bool& exist_cs)
+{
+    ifstream file("cs.txt");
+    if (!file)
+    {
+        cout << "File cs.txt not found.\n";
+        return;
+    }
+
+    getline(file, CS1.name_cs);
+    file >> CS1.amount_ws >> CS1.amount_ws_in_prog;
+    file.ignore();
+    getline(file, CS1.class_cs);
+
+    file.close();
+    exist_cs = true;
+    cout << "CS loaded from cs.txt\n";
+}
 void menu()
 {
     cout << "1. add pipe\n";
@@ -228,11 +315,12 @@ void menu()
     cout << "3. view all objects\n";
     cout << "4. edit pipe\n";
     cout << "5. edit cs\n";
-    cout << "6. save\n";
-    cout << "7. load\n";
+    cout << "6. save pipe\n";
+    cout << "7. save cs\n";
+    cout << "8. load pipe\n";
+    cout << "9. load cs\n";
     cout << "0. exit\n";
 }
-
 
 int main()
 {
@@ -246,13 +334,15 @@ int main()
         menu();
         option = inputint("\nSelect one of the menu items: ");
 
-        if (option == 1) addpipe(pipe1,exist_pipe);
-        else if (option == 2) addcs(CS1, exist_cs);
+        if (option == 1) addpipe(pipe1);
+        else if (option == 2) addcs(CS1);
         else if (option == 3) { showcs(CS1, exist_cs); showpipe(pipe1, exist_pipe); }
         else if (option == 4) editpipe(pipe1, exist_pipe);
         else if (option == 5) editcs(CS1, exist_cs);
- //       else if (option == 6) save(pipe1, exist_pipe, CS1, exist_cs);
- //       else if (option == 7) load(pipe1, exist_pipe, CS1, exist_cs);
+        else if (option == 6) savepipe(pipe1, exist_pipe);
+        else if (option == 7) savecs(CS1, exist_cs);
+        else if (option == 8) loadpipe(pipe1, exist_pipe);
+        else if (option == 9) loadcs(CS1, exist_cs);
         else if (option == 0) break;
         else cout << "Wrong menu item.\n";
     }
