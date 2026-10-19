@@ -67,7 +67,6 @@ double inputdouble(string text)
         cout << text;
         cin >> value;
         if (cin.fail())
-        cin.ignore(1000, '\n');
         {
             cin.clear();
             cin.ignore(1000, '\n');
@@ -75,6 +74,7 @@ double inputdouble(string text)
             writelog("Input error: not a number (expected double)");
             continue;
         }
+        cin.ignore(1000, '\n');
         if (value <= 0)
         {
             cout << "Value must be positive.\n";
@@ -157,7 +157,7 @@ void showpipe(const Pipe& pipe1)
     cout << "Name pipe: " << pipe1.name_p << "\n";
     cout << "Lenght: " << pipe1.lenght << "\n";
     cout << "Diametr: " << pipe1.diam << "\n";
-    cout << "In ripair: " << (pipe1.repair ? "yes" : "no") << "\n";
+    cout << "In repair: " << (pipe1.repair ? "yes" : "no") << "\n";
 }
 
 void showallpipes(const vector<Pipe>& pipes)
@@ -210,6 +210,131 @@ void deletepipe(vector<Pipe>& pipes)
     writelog("Pipe id " + to_string(pipes[index].id) + " deleted");
     pipes.erase(pipes.begin() + index);
     cout << "Pipe deleted.\n";
+}
+
+void searchpipes(const vector<Pipe>& pipes)
+{
+    cout << "1. Search by name\n";
+    cout << "2. Search by repair status\n";
+    int choice = inputint("Choice: ", 1);
+    int count = 0;
+
+    if (choice == 1)
+    {
+        string name = inputstring("Name (or part of name): ");
+        for (size_t i = 0; i < pipes.size(); i++)
+        {
+            if (pipes[i].name_p.find(name) != string::npos)
+            {
+                showpipe(pipes[i]);
+                count++;
+            }
+        }
+    }
+    else if (choice == 2)
+    {
+        bool repair = inputyesno("Search pipes in repair?");
+        for (size_t i = 0; i < pipes.size(); i++)
+        {
+            if (pipes[i].repair == repair)
+            {
+                showpipe(pipes[i]);
+                count++;
+            }
+        }
+    }
+    else
+    {
+        cout << "Wrong choice.\n";
+        writelog("Search pipes: wrong choice " + to_string(choice));
+        return;
+    }
+
+    if (count == 0) cout << "Nothing found.\n";
+    writelog("Search pipes: found " + to_string(count));
+}
+
+void batchpipes(vector<Pipe>& pipes)
+{
+    if (pipes.empty())
+    {
+        cout << "No pipes yet.\n";
+        writelog("Batch edit: no pipes in the list");
+        return;
+    }
+
+    cout << "1. All pipes\n";
+    cout << "2. Pipes by name\n";
+    cout << "3. Pipes by repair status\n";
+    int filter = inputint("Choice: ", 1);
+    string name;
+    bool repair_filter = false;
+    if (filter == 2) name = inputstring("Name (or part of name): ");
+    else if (filter == 3) repair_filter = inputyesno("Pipes in repair?");
+    else if (filter != 1)
+    {
+        cout << "Wrong choice.\n";
+        writelog("Batch edit: wrong filter " + to_string(filter));
+        return;
+    }
+
+    cout << "1. Process all of them\n";
+    cout << "2. Choose one by one\n";
+    int mode = inputint("Choice: ", 1);
+    if (mode != 1 && mode != 2)
+    {
+        cout << "Wrong choice.\n";
+        writelog("Batch edit: wrong mode " + to_string(mode));
+        return;
+    }
+
+    cout << "1. Change repair status\n";
+    cout << "2. Delete\n";
+    int action = inputint("Choice: ", 1);
+    bool new_repair = false;
+    if (action == 1) new_repair = inputyesno("Set repair to");
+    else if (action != 2)
+    {
+        cout << "Wrong choice.\n";
+        writelog("Batch edit: wrong action " + to_string(action));
+        return;
+    }
+
+    int count = 0;
+    size_t i = 0;
+    while (i < pipes.size())
+    {
+        bool match = true;
+        if (filter == 2) match = (pipes[i].name_p.find(name) != string::npos);
+        else if (filter == 3) match = (pipes[i].repair == repair_filter);
+
+        if (match && mode == 2)
+        {
+            showpipe(pipes[i]);
+            match = inputyesno("Process this pipe?");
+        }
+
+        if (!match)
+        {
+            i++;
+            continue;
+        }
+
+        if (action == 1)
+        {
+            pipes[i].repair = new_repair;
+            writelog("Batch edit: pipe id " + to_string(pipes[i].id) + " repair changed");
+            i++;
+        }
+        else
+        {
+            writelog("Batch edit: pipe id " + to_string(pipes[i].id) + " deleted");
+            pipes.erase(pipes.begin() + i);
+        }
+        count++;
+    }
+    cout << "Done. Pipes processed: " << count << "\n";
+    writelog("Batch edit: processed " + to_string(count) + " pipe(s)");
 }
 
 double unsed_p(const CS& cs)
@@ -407,7 +532,7 @@ void searchcs(const vector<CS>& stations)
     writelog("Search CS: found " + to_string(count));
 }
 
-void savepipe(vector<Pipe>& pipes, int next_id)
+void savepipes(vector<Pipe>& pipes, int next_id)
 {
     if (pipes.empty())
     {
@@ -439,67 +564,118 @@ void savepipe(vector<Pipe>& pipes, int next_id)
     writelog("Pipes saved to " + file_name + ": " + to_string(pipes.size()) + " pipe(s)");
 }
 
-void savecs(CS& CS1, bool exist_cs)
+void savecs(vector<CS>& stations, int next_id)
 {
-    if (!exist_cs)
+    if (stations.empty())
     {
         cout << "No CS to save.\n";
+        writelog("Save CS: no CS to save");
         return;
     }
-
-    ofstream file("cs.txt");
+    string file_name = inputstring("File name to save CS: ");
+    ofstream file(file_name);
     if (!file)
     {
         cout << "Cannot open file for writing.\n";
+        writelog("Save CS: cannot open file " + file_name);
         return;
     }
-
-    file << CS1.name_cs << "\n";
-    file << CS1.amount_ws << "\n";
-    file << CS1.amount_ws_in_prog << "\n";
-    file << CS1.class_cs << "\n";
+    file << next_id << "\n";
+    file << stations.size() << "\n";
+    for (size_t i = 0; i < stations.size(); i++)
+    {
+        file << stations[i].id << "\n";
+        file << stations[i].name_cs << "\n";
+        file << stations[i].amount_ws << "\n";
+        file << stations[i].amount_ws_in_prog << "\n";
+        file << stations[i].class_cs << "\n";
+    }
 
     file.close();
-    cout << "CS saved to cs.txt\n";
-
-    file.close();
-    cout << "Saved to goryacheva_ac2504.txt\n";
+    cout << "CS saved to " << file_name << "\n";
+    writelog("CS saved to " + file_name + ": " + to_string(stations.size()) + " CS");
 }
 
-void loadpipe(Pipe& pipe1, bool& exist_pipe)
+void loadpipes(vector<Pipe>& pipes, int& next_id)
 {
-    ifstream file("pipe.txt");
+    string file_name = inputstring("File name to load pipes: ");
+    ifstream file(file_name);
     if (!file)
     {
-        cout << "File pipe.txt not found.\n";
+        cout << "File " << file_name << " not found.\n";
+        writelog("Load pipes: file " + file_name + " not found");
         return;
     }
 
-    getline(file, pipe1.name_p);
-    file >> pipe1.lenght >> pipe1.diam >> pipe1.repair;
+    int new_next_id = 0;
+    int count = 0;
+    vector<Pipe> new_pipes;
+
+    file >> new_next_id >> count;
+    for (int i = 0; i < count && file; i++)
+    {
+        Pipe p;
+        file >> p.id;
+        file.ignore(1000, '\n');
+        getline(file, p.name_p);
+        file >> p.lenght >> p.diam >> p.repair;
+        new_pipes.push_back(p);
+    }
+
+    if (file.fail())
+    {
+        cout << "File is damaged or has wrong format.\n";
+        writelog("Load pipes: wrong format in " + file_name);
+        return;
+    }
 
     file.close();
-    exist_pipe = true;
-    cout << "Pipe loaded from pipe.txt\n";
+    pipes = new_pipes;
+    next_id = new_next_id;
+    cout << "Pipes loaded from " << file_name << "\n";
+    writelog("Pipes loaded from " + file_name + ": " + to_string(pipes.size()) + " pipe(s)");
 }
 
-void loadcs(CS& CS1, bool& exist_cs)
+void loadcs(vector<CS>& stations, int& next_id)
 {
-    ifstream file("cs.txt");
+    string file_name = inputstring("File name to load CS: ");
+    ifstream file(file_name);
     if (!file)
     {
-        cout << "File cs.txt not found.\n";
+        cout << "File " << file_name << " not found.\n";
+        writelog("Load CS: file " + file_name + " not found");
         return;
     }
 
-    getline(file, CS1.name_cs);
-    file >> CS1.amount_ws >> CS1.amount_ws_in_prog;
-    file.ignore();
-    getline(file, CS1.class_cs);
+    int new_next_id = 0;
+    int count = 0;
+    vector<CS> new_stations;
+
+    file >> new_next_id >> count;
+    for (int i = 0; i < count && file; i++)
+    {
+        CS cs;
+        file >> cs.id;
+        file.ignore(1000, '\n');
+        getline(file, cs.name_cs);
+        file >> cs.amount_ws >> cs.amount_ws_in_prog;
+        file.ignore(1000, '\n');
+        getline(file, cs.class_cs);
+        new_stations.push_back(cs);
+    }
+
+    if (file.fail())
+    {
+        cout << "File is damaged or has wrong format.\n";
+        writelog("Load CS: wrong format in " + file_name);
+        return;
+    }
 
     file.close();
-    exist_cs = true;
-    cout << "CS loaded from cs.txt\n";
+    stations = new_stations;
+    next_id = new_next_id;
+    cout << "CS loaded from " << file_name << "\n";
+    writelog("CS loaded from " + file_name + ": " + to_string(stations.size()) + " CS");
 }
 void menu()
 {
@@ -539,9 +715,9 @@ int main()
         else if (option == 4) editpipe(pipes);
         else if (option == 5) editcs(stations);
         else if (option == 6) savepipes(pipes, next_pipe_id);
-        else if (option == 7) savecs(stations, next_cs_id);
+        else if (option == 7) savecs(stations, next_CS_id);
         else if (option == 8) loadpipes(pipes, next_pipe_id);
-        else if (option == 9) loadcs(stations, next_cs_id);
+        else if (option == 9) loadcs(stations, next_CS_id);
         else if (option == 10) deletepipe(pipes);
         else if (option == 11) deletecs(stations);
         else if (option == 12) searchpipes(pipes);
