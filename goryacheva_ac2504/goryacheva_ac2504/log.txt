@@ -1,55 +1,300 @@
-Program started
-Input int: 1
-Input string: ©çäç
-Input double: 34.000000
-Input int: 33
-Input y/n: y
-Pipe added, id = 1, name = ©çäç
-Input int: 1
-Input string: shosvo
-Input double: 43.000000
-Input int: 32
-Input y/n: n
-Pipe added, id = 2, name = shosvo
-Input int: 10
-Input error: int 0 is less than 1
-Input int: 3
-Pipe select: id not found
-Input int: 1
-Input string: 0
-Input double: 87.000000
-Input int: 665
-Input error: expected y or n, got: u
-Input y/n: y
-Pipe added, id = 3, name = 0
-Input int: 10
-Input int: 2
-Pipe id 2 deleted
-Input int: 13
-Input int: 1
-Input string: svo
-Search CS: found 0
-Input int: 12
-Input int: 1
-Input string: svo
-Search pipes: found 0
-Input int: 12
-Input int: 1
-Input string: sho
-Search pipes: found 0
-Input int: 12
-Input int: 1
-Input string: shosvo
-Search pipes: found 0
-Input int: 3
-Input int: 12
-Input int: 1
-Input string: 1
-Search pipes: found 0
-Input int: 12
-Input int: 1
-Input string: 0
-Search pipes: found 1
-Input int: 6
-Input string: milena
-Pipes saved to milena: 2 pipe(s)
+1
+1
+1
+¢ ¢  
+443
+33
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+milena
+11
+21
+n
+6
+milena111
+0
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+1
+1
+1
+443
+y
+2
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0
+1
+milenaaaa
+12
+13
+n
+0
+1
+1
+1
+443
+y
+2
+gfvh
+22
+22
+3
+6
+milena22
+0

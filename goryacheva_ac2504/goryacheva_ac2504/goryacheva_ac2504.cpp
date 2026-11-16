@@ -1,543 +1,228 @@
 ﻿#include <iostream>
-#include <string>
 #include <fstream>
-#include <vector>
+#include <unordered_map>
+#include <set>
+#include "Pipe.h"
+#include "CS.h"
+#include "utils.h"
+using namespace std;
 
-using namespace std; 
-
-struct Pipe 
+void addpipe(unordered_map<int, Pipe>& pipes)
 {
-    int id;
-    string name_p;
-    int diam;
-    double lenght;
-    bool repair;
-};
-
-struct CS
-{
-    int id;
-    string name_cs;
-    int amount_ws;
-    int amount_ws_in_prog;
-    string class_cs;
-};
-
-void writelog(const string& text)
-{
-    ofstream file("log.txt", ios::app);
-    if (file)
-    {
-        file << text << "\n";
-    }
-}
-
-int inputint(string text, int min_value)
-{
-    int value;
-    while (true)
-    {
-        cout << text;
-        cin >> value;
-        if (cin.fail())
-        {
-            cin.clear();
-            cin.ignore(1000, '\n');
-            cout << "Not a number.\n";
-            writelog("Input error: not a number (expected int)");
-            continue;
-        }
-        cin.ignore(1000, '\n');
-        if (value < min_value)
-        {
-            cout << "Value must be at least " << min_value << ".\n";
-            writelog("Input error: int " + to_string(value) + " is less than " + to_string(min_value));
-            continue;
-        }
-        writelog("Input int: " + to_string(value));
-        return value;
-    }
-}
-
-double inputdouble(string text)
-{
-    double value;
-    while (true)
-    {
-        cout << text;
-        cin >> value;
-        if (cin.fail())
-        {
-            cin.clear();
-            cin.ignore(1000, '\n');
-            cout << "Not a number.\n";
-            writelog("Input error: not a number (expected double)");
-            continue;
-        }
-        cin.ignore(1000, '\n');
-        if (value <= 0)
-        {
-            cout << "Value must be positive.\n";
-            writelog("Input error: double " + to_string(value) + " is not positive");
-            continue;
-        }
-        writelog("Input double: " + to_string(value));
-        return value;
-    }
-}
-
-string inputstring(string text)
-{
-    string value;
-    while (true)
-    {
-        cout << text;
-        getline(cin >> ws, value);
-        if (value == "")
-        {
-            cout << "Cannot be empty.\n";
-            writelog("Input error: empty string");
-            continue;
-        }
-        writelog("Input string: " + value);
-        return value;
-    }
-}
-
-bool inputyesno(string text)
-{
-    string value;
-    while (true)
-    {
-        cout << text << " y/n ";
-        getline(cin >> ws, value);
-        if (value == "y")
-        {
-            writelog("Input y/n: y");
-            return true;
-        }
-        if (value == "n")
-        {
-            writelog("Input y/n: n");
-            return false;
-        }
-        cout << "Please type y or n.\n";
-        writelog("Input error: expected y or n, got: " + value);
-    }
-}
-
-void addpipe(vector<Pipe>& pipes, int& pipe_id)
-{
-    Pipe p;
     cout << "\nEnter pipe data:\n";
-    p.id = pipe_id;
-    p.name_p = inputstring("Name: ");
-    p.lenght = inputdouble("Lenght in km: ");
-    p.diam = inputint("Diametr in mm: ", 1);
-    p.repair = inputyesno("Is it under repair?");
-
-    pipes.push_back(p);
-    pipe_id++;
-    cout << "Pipe added. Id = " << p.id << "\n";
-    writelog("Pipe added, id = " + to_string(p.id) + ", name = " + p.name_p);
+    Pipe p;
+    p.input();
+    pipes.emplace(p.getId(), p);
+    cout << "Pipe added. Id = " << p.getId() << "\n";
 }
 
-int findpipe(const vector<Pipe>& pipes, int id)
-{
-    for (size_t i = 0; i < pipes.size(); i++)
-    {
-        if (pipes[i].id == id) return (int)i;
-    }
-    return -1;
-}
-
-void showpipe(const Pipe& pipe1)
-{
-    cout << "Name id: " << pipe1.id << "\n";
-    cout << "Name pipe: " << pipe1.name_p << "\n";
-    cout << "Lenght: " << pipe1.lenght << "\n";
-    cout << "Diametr: " << pipe1.diam << "\n";
-    cout << "In repair: " << (pipe1.repair ? "yes" : "no") << "\n";
-}
-
-void showallpipes(const vector<Pipe>& pipes)
+void showallpipes(const unordered_map<int, Pipe>& pipes)
 {
     if (pipes.empty())
     {
         cout << "No pipes yet.\n";
         return;
     }
-    for (size_t i = 0; i < pipes.size(); i++)
-    {
-        showpipe(pipes[i]);
-    }
+    for (const auto& item : pipes) item.second.show();
 }
 
-int choosepipe(const vector<Pipe>& pipes)
+void showpipes(const unordered_map<int, Pipe>& pipes, const set<int>& ids)
+{
+    for (int id : ids) pipes.at(id).show();
+}
+
+int choosepipe(const unordered_map<int, Pipe>& pipes)
 {
     if (pipes.empty())
     {
         cout << "No pipes yet.\n";
-        writelog("Pipe select: no pipes in the list");
         return -1;
     }
     showallpipes(pipes);
-    int index = findpipe(pipes, inputint("Enter pipe id: ", 1));
-    if (index == -1)
+    int id = inputint("Enter pipe id: ", 1);
+    if (pipes.find(id) == pipes.end())
     {
         cout << "Pipe with this id not found.\n";
-        writelog("Pipe select: id not found");
+        return -1;
     }
-    return index;
+    return id;
 }
 
-void editpipe(vector<Pipe>& pipes)
+void editpipe(unordered_map<int, Pipe>& pipes)
 {
-    int index = choosepipe(pipes);
-    if (index == -1) return;
+    int id = choosepipe(pipes);
+    if (id == -1) return;
 
-    cout << "Now in repair: " << (pipes[index].repair ? "yes" : "no") << "\n";
-    pipes[index].repair = inputyesno("Set to repair");
+    cout << "Now in repair: " << (pipes.at(id).isRepair() ? "yes" : "no") << "\n";
+    pipes.at(id).setRepair(inputyesno("Set to repair"));
     cout << "Done \n";
-    writelog("Pipe id " + to_string(pipes[index].id) + " edited");
 }
 
-void deletepipe(vector<Pipe>& pipes)
+void deletepipe(unordered_map<int, Pipe>& pipes)
 {
-    int index = choosepipe(pipes);
-    if (index == -1) return;
+    int id = choosepipe(pipes);
+    if (id == -1) return;
 
-    writelog("Pipe id " + to_string(pipes[index].id) + " deleted");
-    pipes.erase(pipes.begin() + index);
+    pipes.erase(id);
     cout << "Pipe deleted.\n";
 }
 
-void searchpipes(const vector<Pipe>& pipes)
+set<int> allpipes(const unordered_map<int, Pipe>& pipes)
+{
+    set<int> ids;
+    for (const auto& item : pipes) ids.insert(item.first);
+    return ids;
+}
+
+// --- Шаблон фильтрации (как в коде про студентов) ---
+
+// Тип "функция-проверка": принимает трубу и параметр, отвечает да/нет
+template<typename T>
+using Filter = bool(*)(const Pipe& p, T param);
+
+// Проверка 1: название содержит введённый текст
+bool CheckByName(const Pipe& p, string param)
+{
+    return p.getName().find(param) != string::npos;
+}
+
+// Проверка 2: статус ремонта совпадает с нужным
+bool CheckByRepair(const Pipe& p, bool param)
+{
+    return p.isRepair() == param;
+}
+
+// Общий поиск: возвращает id всех труб, которые прошли проверку f
+template<typename T>
+set<int> FindPipesByFilter(const unordered_map<int, Pipe>& pipes, Filter<T> f, T param)
+{
+    set<int> ids;
+    for (const auto& item : pipes)
+        if (f(item.second, param)) ids.insert(item.first);
+    return ids;
+}
+
+void searchpipes(const unordered_map<int, Pipe>& pipes)
 {
     cout << "1. Search by name\n";
     cout << "2. Search by repair status\n";
     int choice = inputint("Choice: ", 1);
-    int count = 0;
 
-    if (choice == 1)
-    {
-        string name = inputstring("Name (or part of name): ");
-        for (size_t i = 0; i < pipes.size(); i++)
-        {
-            if (pipes[i].name_p.find(name) != string::npos)
-            {
-                showpipe(pipes[i]);
-                count++;
-            }
-        }
-    }
-    else if (choice == 2)
-    {
-        bool repair = inputyesno("Search pipes in repair?");
-        for (size_t i = 0; i < pipes.size(); i++)
-        {
-            if (pipes[i].repair == repair)
-            {
-                showpipe(pipes[i]);
-                count++;
-            }
-        }
-    }
+    set<int> ids;
+    if (choice == 1) ids = FindPipesByFilter(pipes, CheckByName, inputstring("Name (or part of name): "));
+    else if (choice == 2) ids = FindPipesByFilter(pipes, CheckByRepair, inputyesno("Search pipes in repair?"));
     else
     {
         cout << "Wrong choice.\n";
-        writelog("Search pipes: wrong choice " + to_string(choice));
         return;
     }
 
-    if (count == 0) cout << "Nothing found.\n";
-    writelog("Search pipes: found " + to_string(count));
+    if (ids.empty()) cout << "Nothing found.\n";
+    else showpipes(pipes, ids);
 }
 
-void batchpipes(vector<Pipe>& pipes)
+set<int> selectpipes(const unordered_map<int, Pipe>& pipes)
 {
-    if (pipes.empty())
-    {
-        cout << "No pipes yet.\n";
-        writelog("Batch edit: no pipes in the list");
-        return;
-    }
-
     cout << "1. All pipes\n";
     cout << "2. Pipes by name\n";
     cout << "3. Pipes by repair status\n";
     int filter = inputint("Choice: ", 1);
-    string name;
-    bool repair_filter = false;
-    if (filter == 2) name = inputstring("Name (or part of name): ");
-    else if (filter == 3) repair_filter = inputyesno("Pipes in repair?");
-    else if (filter != 1)
+
+    set<int> ids;
+    if (filter == 1) ids = allpipes(pipes);
+    else if (filter == 2) ids = FindPipesByFilter(pipes, CheckByName, inputstring("Name (or part of name): "));
+    else if (filter == 3) ids = FindPipesByFilter(pipes, CheckByRepair, inputyesno("Pipes in repair?"));
+    else
     {
         cout << "Wrong choice.\n";
-        writelog("Batch edit: wrong filter " + to_string(filter));
-        return;
+        return ids;
     }
 
+    if (ids.empty())
+    {
+        cout << "Nothing found.\n";
+    }
+    return ids;
+}
+
+set<int> choosesubset(const unordered_map<int, Pipe>& pipes, const set<int>& ids)
+{
     cout << "1. Process all of them\n";
     cout << "2. Choose one by one\n";
     int mode = inputint("Choice: ", 1);
-    if (mode != 1 && mode != 2)
+
+    if (mode == 1) return ids;
+
+    set<int> chosen;
+    if (mode != 2)
     {
         cout << "Wrong choice.\n";
-        writelog("Batch edit: wrong mode " + to_string(mode));
+        return chosen;
+    }
+
+    for (int id : ids)
+    {
+        pipes.at(id).show();
+        if (inputyesno("Process this pipe?")) chosen.insert(id);
+    }
+    if (chosen.empty())
+    {
+        cout << "Nothing selected.\n";
+    }
+    return chosen;
+}
+
+void changerepair(unordered_map<int, Pipe>& pipes, const set<int>& ids)
+{
+    bool new_repair = inputyesno("Set repair to");
+    for (int id : ids)
+    {
+        pipes.at(id).setRepair(new_repair);
+    }
+    cout << "Done. Pipes changed: " << ids.size() << "\n";
+}
+
+void deletepipes(unordered_map<int, Pipe>& pipes, const set<int>& ids)
+{
+    for (int id : ids)
+    {
+        pipes.erase(id);
+    }
+    cout << "Done. Pipes deleted: " << ids.size() << "\n";
+}
+
+void batchpipes(unordered_map<int, Pipe>& pipes)
+{
+    if (pipes.empty())
+    {
+        cout << "No pipes yet.\n";
         return;
     }
+
+    set<int> found = selectpipes(pipes);
+    if (found.empty()) return;
+
+    set<int> chosen = choosesubset(pipes, found);
+    if (chosen.empty()) return;
 
     cout << "1. Change repair status\n";
     cout << "2. Delete\n";
     int action = inputint("Choice: ", 1);
-    bool new_repair = false;
-    if (action == 1) new_repair = inputyesno("Set repair to");
-    else if (action != 2)
-    {
-        cout << "Wrong choice.\n";
-        writelog("Batch edit: wrong action " + to_string(action));
-        return;
-    }
 
-    int count = 0;
-    size_t i = 0;
-    while (i < pipes.size())
-    {
-        bool match = true;
-        if (filter == 2) match = (pipes[i].name_p.find(name) != string::npos);
-        else if (filter == 3) match = (pipes[i].repair == repair_filter);
-
-        if (match && mode == 2)
-        {
-            showpipe(pipes[i]);
-            match = inputyesno("Process this pipe?");
-        }
-
-        if (!match)
-        {
-            i++;
-            continue;
-        }
-
-        if (action == 1)
-        {
-            pipes[i].repair = new_repair;
-            writelog("Batch edit: pipe id " + to_string(pipes[i].id) + " repair changed");
-            i++;
-        }
-        else
-        {
-            writelog("Batch edit: pipe id " + to_string(pipes[i].id) + " deleted");
-            pipes.erase(pipes.begin() + i);
-        }
-        count++;
-    }
-    cout << "Done. Pipes processed: " << count << "\n";
-    writelog("Batch edit: processed " + to_string(count) + " pipe(s)");
-}
-
-double unsed_p(const CS& cs)
-{
-    return (cs.amount_ws - cs.amount_ws_in_prog) * 100.0 / cs.amount_ws;
-}
-
-void addcs(vector<CS>& stations, int& CS_id)
-{
-    CS cs;
-    cout << "Enter cs data: \n";
-    cs.id = CS_id;
-    cs.name_cs = inputstring("Name: ");
-    cs.amount_ws = inputint("Total number of shops: ", 1);
-    cs.amount_ws_in_prog = inputint("Shops working now: ", 0);
-    while (cs.amount_ws_in_prog > cs.amount_ws)
-    {
-        cout << "Cannot be more than " << cs.amount_ws << ".\n";
-        writelog("Input error: working shops more than total");
-        cs.amount_ws_in_prog = inputint("Shops working now: ", 0);
-    }
-    cs.class_cs = inputstring("Station class: ");
-
-    stations.push_back(cs);
-    CS_id++;
-    cout << "CS added. Id = " << cs.id << "\n";
-    writelog("CS added, id = " + to_string(cs.id) + ", name = " + cs.name_cs);
-}
-
-int findcs(const vector<CS>& stations, int id)
-{
-    for (size_t i = 0; i < stations.size(); i++)
-    {
-        if (stations[i].id == id) return (int)i;
-    }
-    return -1;
-}
-
-void showcs(const CS& CS1)
-{
-    cout << "Name id:" << CS1.id << "\n";
-    cout << "Name CS:" << CS1.name_cs << "\n";
-    cout << "Shops total:" << CS1.amount_ws << "\n";
-    cout << "Shops working:" << CS1.amount_ws_in_prog << "\n";
-    cout << "Unused shops:" << unsed_p(CS1) << "%\n";
-    cout << "Class:" << CS1.class_cs << "\n";
-}
-
-void showallcs(const vector<CS>& stations)
-{
-    if (stations.empty())
-    {
-        cout << "No CS yet.\n";
-        return;
-    }
-    for (size_t i = 0; i < stations.size(); i++)
-    {
-        showcs(stations[i]);
-    }
-
-}
-
-int choosecs(const vector<CS>& stations)
-{
-    if (stations.empty())
-    {
-        cout << "No CS yet.\n";
-        writelog("CS select: no CS in the list");
-        return -1;
-    }
-    showallcs(stations);
-    int index = findcs(stations, inputint("Enter CS id: ", 1));
-    if (index == -1)
-    {
-        cout << "CS with this id not found.\n";
-        writelog("CS select: id not found");
-    }
-    return index;
-}
-
-void startshop(CS& CS1)
-{
-    if (CS1.amount_ws_in_prog == CS1.amount_ws)
-    {
-        cout << "All shops already working.\n";
-    }
-    else
-    {
-        CS1.amount_ws_in_prog++;
-        cout << "Shop started. Working: " << CS1.amount_ws_in_prog << "/" << CS1.amount_ws << "\n";
-    }
-}
-
-void stopshop(CS& CS1)
-{
-    if (CS1.amount_ws_in_prog <= 0)
-    {
-        cout << "No shops are working.\n";
-    }
-    else
-    {
-        CS1.amount_ws_in_prog--;
-        cout << "Shop stopped. Working: " << CS1.amount_ws_in_prog << "/" << CS1.amount_ws << "\n";
-    }
-}
-void editcs(vector<CS>& stations)
-{
-    int index = choosecs(stations);
-    if (index == -1) return;
-
-    cout << "1. Start a shop\n";
-    cout << "2. Stop a shop\n";
-    int choice = inputint("Choice: ", 1);
-
-    if (choice == 1)
-    {
-        startshop(stations[index]);
-        writelog("CS id " + to_string(stations[index].id) + ": start shop");
-    }
-    else if (choice == 2)
-    {
-        stopshop(stations[index]);
-        writelog("CS id " + to_string(stations[index].id) + ": stop shop");
-    }
+    if (action == 1) changerepair(pipes, chosen);
+    else if (action == 2) deletepipes(pipes, chosen);
     else
     {
         cout << "Wrong choice.\n";
-        writelog("Edit CS: wrong choice " + to_string(choice));
-    }
-}
-
-void deletecs(vector<CS>& stations)
-{
-    int index = choosecs(stations);
-    if (index == -1) return;
-
-    writelog("CS id " + to_string(stations[index].id) + " deleted");
-    stations.erase(stations.begin() + index);
-    cout << "CS deleted.\n";
-}
-
-int inputpercent(string text, int min_value)
-{
-    int value = inputint(text, min_value);
-    while (value > 100)
-    {
-        cout << "Cannot be more than 100.\n";
-        writelog("Input error: percent more than 100");
-        value = inputint(text, min_value);
-    }
-    return value;
-}
-
-void searchcs(const vector<CS>& stations)
-{
-    cout << "1. Search by name\n";
-    cout << "2. Search by percent of unused shops\n";
-    int choice = inputint("Choice: ", 1);
-    int count = 0;
-
-    if (choice == 1)
-    {
-        string name = inputstring("Name (or part of name): ");
-        for (size_t i = 0; i < stations.size(); i++)
-        {
-            if (stations[i].name_cs.find(name) != string::npos)
-            {
-                showcs(stations[i]);
-                count++;
-            }
-        }
-    }
-    else if (choice == 2)
-    {
-        int from = inputpercent("Percent of unused shops from (0-100): ", 0);
-        int to = inputpercent("Percent of unused shops to (" + to_string(from) + "-100): ", from);
-        for (size_t i = 0; i < stations.size(); i++)
-        {
-            double percent = unsed_p(stations[i]);
-            if (percent >= from && percent <= to)
-            {
-                showcs(stations[i]);
-                count++;
-            }
-        }
-    }
-    else
-    {
-        cout << "Wrong choice.\n";
-        writelog("Search CS: wrong choice " + to_string(choice));
         return;
     }
-
-    if (count == 0) cout << "Nothing found.\n";
-    writelog("Search CS: found " + to_string(count));
 }
 
-void savepipes(vector<Pipe>& pipes, int next_id)
+void savepipes(const unordered_map<int, Pipe>& pipes)
 {
     if (pipes.empty())
     {
         cout << "No pipe to save.\n";
-        writelog("Save pipes: no pipes to save");
         return;
     }
     string file_name = inputstring("File name to save pipes: ");
@@ -545,31 +230,169 @@ void savepipes(vector<Pipe>& pipes, int next_id)
     if (!file)
     {
         cout << "Cannot open file for writing.\n";
-        writelog("Save pipes: cannot open file " + file_name);
         return;
     }
-    file << next_id << "\n";
+    file << Pipe::getNextId() << "\n";
     file << pipes.size() << "\n";
-    for (size_t i = 0; i < pipes.size(); i++)
-    {
-        file << pipes[i].id << "\n";
-        file << pipes[i].name_p << "\n";
-        file << pipes[i].lenght << "\n";
-        file << pipes[i].diam << "\n";
-        file << pipes[i].repair << "\n";
-    }
+    for (const auto& item : pipes) item.second.save(file);
 
-    file.close();
     cout << "Pipes saved to " << file_name << "\n";
-    writelog("Pipes saved to " + file_name + ": " + to_string(pipes.size()) + " pipe(s)");
 }
 
-void savecs(vector<CS>& stations, int next_id)
+void loadpipes(unordered_map<int, Pipe>& pipes)
+{
+    string file_name = inputstring("File name to load pipes: ");
+    ifstream file(file_name);
+    if (!file)
+    {
+        cout << "File " << file_name << " not found.\n";
+        return;
+    }
+
+    int new_next_id = 0;
+    int count = 0;
+    unordered_map<int, Pipe> new_pipes;
+
+    file >> new_next_id >> count;
+    for (int i = 0; i < count && file; i++)
+    {
+        Pipe p;
+        if (!p.load(file)) break;
+        new_pipes.emplace(p.getId(), p);
+    }
+
+    if (file.fail() || (int)new_pipes.size() != count)
+    {
+        cout << "File is damaged or has wrong format.\n";
+        return;
+    }
+
+    pipes = new_pipes;
+    Pipe::setNextId(new_next_id);
+    cout << "Pipes loaded from " << file_name << "\n";
+}
+
+void addcs(unordered_map<int, CS>& stations)
+{
+    cout << "Enter cs data: \n";
+    CS cs;
+    cs.input();
+    stations.emplace(cs.getId(), cs);
+    cout << "CS added. Id = " << cs.getId() << "\n";
+}
+
+void showallcs(const unordered_map<int, CS>& stations)
+{
+    if (stations.empty())
+    {
+        cout << "No CS yet.\n";
+        return;
+    }
+    for (const auto& item : stations) item.second.show();
+}
+
+void showcs(const unordered_map<int, CS>& stations, const set<int>& ids)
+{
+    for (int id : ids) stations.at(id).show();
+}
+
+int choosecs(const unordered_map<int, CS>& stations)
+{
+    if (stations.empty())
+    {
+        cout << "No CS yet.\n";
+        return -1;
+    }
+    showallcs(stations);
+    int id = inputint("Enter CS id: ", 1);
+    if (stations.find(id) == stations.end())
+    {
+        cout << "CS with this id not found.\n";
+        return -1;
+    }
+    return id;
+}
+
+void editcs(unordered_map<int, CS>& stations)
+{
+    int id = choosecs(stations);
+    if (id == -1) return;
+
+    cout << "1. Start a shop\n";
+    cout << "2. Stop a shop\n";
+    int choice = inputint("Choice: ", 1);
+
+    if (choice == 1)
+    {
+        stations.at(id).startShop();
+    }
+    else if (choice == 2)
+    {
+        stations.at(id).stopShop();
+    }
+    else
+    {
+        cout << "Wrong choice.\n";
+    }
+}
+
+void deletecs(unordered_map<int, CS>& stations)
+{
+    int id = choosecs(stations);
+    if (id == -1) return;
+
+    stations.erase(id);
+    cout << "CS deleted.\n";
+}
+
+set<int> csbyname(const unordered_map<int, CS>& stations, const string& name)
+{
+    set<int> ids;
+    for (const auto& item : stations)
+        if (item.second.getName().find(name) != string::npos) ids.insert(item.first);
+    return ids;
+}
+
+set<int> csbypercent(const unordered_map<int, CS>& stations, int from, int to)
+{
+    set<int> ids;
+    for (const auto& item : stations)
+    {
+        double percent = item.second.unusedPercent();
+        if (percent >= from && percent <= to) ids.insert(item.first);
+    }
+    return ids;
+}
+
+void searchcs(const unordered_map<int, CS>& stations)
+{
+    cout << "1. Search by name\n";
+    cout << "2. Search by percent of unused shops\n";
+    int choice = inputint("Choice: ", 1);
+
+    set<int> ids;
+    if (choice == 1) ids = csbyname(stations, inputstring("Name (or part of name): "));
+    else if (choice == 2)
+    {
+        int from = inputpercent("Percent of unused shops from (0-100): ", 0);
+        int to = inputpercent("Percent of unused shops to (" + to_string(from) + "-100): ", from);
+        ids = csbypercent(stations, from, to);
+    }
+    else
+    {
+        cout << "Wrong choice.\n";
+        return;
+    }
+
+    if (ids.empty()) cout << "Nothing found.\n";
+    else showcs(stations, ids);
+}
+
+void savecs(const unordered_map<int, CS>& stations)
 {
     if (stations.empty())
     {
         cout << "No CS to save.\n";
-        writelog("Save CS: no CS to save");
         return;
     }
     string file_name = inputstring("File name to save CS: ");
@@ -577,105 +400,46 @@ void savecs(vector<CS>& stations, int next_id)
     if (!file)
     {
         cout << "Cannot open file for writing.\n";
-        writelog("Save CS: cannot open file " + file_name);
         return;
     }
-    file << next_id << "\n";
+    file << CS::getNextId() << "\n";
     file << stations.size() << "\n";
-    for (size_t i = 0; i < stations.size(); i++)
-    {
-        file << stations[i].id << "\n";
-        file << stations[i].name_cs << "\n";
-        file << stations[i].amount_ws << "\n";
-        file << stations[i].amount_ws_in_prog << "\n";
-        file << stations[i].class_cs << "\n";
-    }
+    for (const auto& item : stations) item.second.save(file);
 
-    file.close();
     cout << "CS saved to " << file_name << "\n";
-    writelog("CS saved to " + file_name + ": " + to_string(stations.size()) + " CS");
 }
 
-void loadpipes(vector<Pipe>& pipes, int& next_id)
-{
-    string file_name = inputstring("File name to load pipes: ");
-    ifstream file(file_name);
-    if (!file)
-    {
-        cout << "File " << file_name << " not found.\n";
-        writelog("Load pipes: file " + file_name + " not found");
-        return;
-    }
-
-    int new_next_id = 0;
-    int count = 0;
-    vector<Pipe> new_pipes;
-
-    file >> new_next_id >> count;
-    for (int i = 0; i < count && file; i++)
-    {
-        Pipe p;
-        file >> p.id;
-        file.ignore(1000, '\n');
-        getline(file, p.name_p);
-        file >> p.lenght >> p.diam >> p.repair;
-        new_pipes.push_back(p);
-    }
-
-    if (file.fail())
-    {
-        cout << "File is damaged or has wrong format.\n";
-        writelog("Load pipes: wrong format in " + file_name);
-        return;
-    }
-
-    file.close();
-    pipes = new_pipes;
-    next_id = new_next_id;
-    cout << "Pipes loaded from " << file_name << "\n";
-    writelog("Pipes loaded from " + file_name + ": " + to_string(pipes.size()) + " pipe(s)");
-}
-
-void loadcs(vector<CS>& stations, int& next_id)
+void loadcs(unordered_map<int, CS>& stations)
 {
     string file_name = inputstring("File name to load CS: ");
     ifstream file(file_name);
     if (!file)
     {
         cout << "File " << file_name << " not found.\n";
-        writelog("Load CS: file " + file_name + " not found");
         return;
     }
 
     int new_next_id = 0;
     int count = 0;
-    vector<CS> new_stations;
+    unordered_map<int, CS> new_stations;
 
     file >> new_next_id >> count;
     for (int i = 0; i < count && file; i++)
     {
         CS cs;
-        file >> cs.id;
-        file.ignore(1000, '\n');
-        getline(file, cs.name_cs);
-        file >> cs.amount_ws >> cs.amount_ws_in_prog;
-        file.ignore(1000, '\n');
-        getline(file, cs.class_cs);
-        new_stations.push_back(cs);
+        if (!cs.load(file)) break;
+        new_stations.emplace(cs.getId(), cs);
     }
 
-    if (file.fail())
+    if (file.fail() || (int)new_stations.size() != count)
     {
         cout << "File is damaged or has wrong format.\n";
-        writelog("Load CS: wrong format in " + file_name);
         return;
     }
 
-    file.close();
     stations = new_stations;
-    next_id = new_next_id;
+    CS::setNextId(new_next_id);
     cout << "CS loaded from " << file_name << "\n";
-    writelog("CS loaded from " + file_name + ": " + to_string(stations.size()) + " CS");
 }
 void menu()
 {
@@ -695,29 +459,27 @@ void menu()
     cout << "14. batch edit pipes\n";
     cout << "0. exit\n";
 }
+
 int main()
 {
-    vector<Pipe> pipes;
-    int next_pipe_id = 1;
-    vector<CS> stations;
-    int next_CS_id = 1;
+    unordered_map<int, Pipe> pipes;
+    unordered_map<int, CS> stations;
     int option;
 
-    writelog("Program started");
     while (true)
     {
         menu();
         option = inputint("\nSelect one of the menu items: ", 0);
 
-        if (option == 1) addpipe(pipes, next_pipe_id);
-        else if (option == 2) addcs(stations, next_CS_id);
+        if (option == 1) addpipe(pipes);
+        else if (option == 2) addcs(stations);
         else if (option == 3) { showallpipes(pipes); showallcs(stations); }
         else if (option == 4) editpipe(pipes);
         else if (option == 5) editcs(stations);
-        else if (option == 6) savepipes(pipes, next_pipe_id);
-        else if (option == 7) savecs(stations, next_CS_id);
-        else if (option == 8) loadpipes(pipes, next_pipe_id);
-        else if (option == 9) loadcs(stations, next_CS_id);
+        else if (option == 6) savepipes(pipes);
+        else if (option == 7) savecs(stations);
+        else if (option == 8) loadpipes(pipes);
+        else if (option == 9) loadcs(stations);
         else if (option == 10) deletepipe(pipes);
         else if (option == 11) deletecs(stations);
         else if (option == 12) searchpipes(pipes);
@@ -725,7 +487,6 @@ int main()
         else if (option == 14) batchpipes(pipes);
         else if (option == 0)
         {
-            writelog("Program finished");
             break;
         }
         else cout << "Wrong menu item.\n";
